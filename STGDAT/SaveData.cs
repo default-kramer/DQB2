@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace STGDAT
 {
@@ -395,8 +396,21 @@ namespace STGDAT
 			int name = 0;
 			for (int offset = 0; offset < mBuffer.Length; offset += size, name++)
 			{
-				var partName = Path.Combine(outDir.FullName, $"bytes{name.ToString().PadLeft(6, '0')}.bin");
-				File.WriteAllBytes(partName, mBuffer.Slice(offset, size).ToArray());
+				var slice = mBuffer.Slice(offset, size).ToArray();
+
+				if (offset > 0x5D6FEF0) // Pretty sure IoA should always be zero beyond this address
+				{
+					if (slice.Any(x => x != 0))
+					{
+						System.Diagnostics.Debugger.Break();
+						throw new Exception("Expected this range to always contain 0");
+					}
+				}
+				else
+				{
+					var partName = Path.Combine(outDir.FullName, $"bytes{name.ToString("X4")}.bin");
+					File.WriteAllBytes(partName, slice);
+				}
 			}
 		}
 	}
