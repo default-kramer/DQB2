@@ -119,6 +119,17 @@ namespace CMNDAT
 			return result;
 		}
 
+		public static uint ReadNumber(uint address, uint size, ReadOnlySpan<byte> mBuffer)
+		{
+			if (address + size >= mBuffer.Length) return 0;
+			uint result = 0;
+			for (int i = 0; i < size; i++)
+			{
+				result += (uint)mBuffer[(int)address + i] << (i * 8);
+			}
+			return result;
+		}
+
 		public uint ReadNumber_Header(uint address, uint size)
 		{
 			if (mHeader == null) return 0;
@@ -189,6 +200,16 @@ namespace CMNDAT
 			address = CalcAddress(address);
 			if (address + size >= mBuffer.Length) return;
 			for (uint i = 0; i < size; i++)
+			{
+				mBuffer[address + i] = (Byte)(value & 0xFF);
+				value >>= 8;
+			}
+		}
+
+		public static void WriteNumber(int address, uint size, uint value, Span<byte> mBuffer)
+		{
+			if (address + size >= mBuffer.Length) return;
+			for (int i = 0; i < size; i++)
 			{
 				mBuffer[address + i] = (Byte)(value & 0xFF);
 				value >>= 8;
