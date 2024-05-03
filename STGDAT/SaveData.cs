@@ -44,6 +44,10 @@ namespace STGDAT
 			try
 			{
 				mBuffer = Decomp(comp);
+				if (false)
+				{
+					WriteBinaries(mBuffer, filename);
+				}
 			}
 			catch
 			{
@@ -379,6 +383,21 @@ namespace STGDAT
 				}
 			}
 			return result;
+		}
+
+		private static void WriteBinaries(ReadOnlySpan<byte> mBuffer, string filename)
+		{
+			var file = new System.IO.FileInfo(filename);
+			var outDir = new DirectoryInfo(@"C:\DQB2dumps\").CreateSubdirectory(DateTime.UtcNow.ToString("yyyy-MM-dd-HHmmssfff"));
+			file.CopyTo(Path.Combine(outDir.FullName, file.Name));
+
+			const int size = 0x10000;
+			int name = 0;
+			for (int offset = 0; offset < mBuffer.Length; offset += size, name++)
+			{
+				var partName = Path.Combine(outDir.FullName, $"bytes{name.ToString().PadLeft(6, '0')}.bin");
+				File.WriteAllBytes(partName, mBuffer.Slice(offset, size).ToArray());
+			}
 		}
 	}
 }
